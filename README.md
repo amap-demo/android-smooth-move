@@ -9,8 +9,8 @@
 
 ## 效果图如下 ##
 
-![Screenshot](https://raw.githubusercontent.com/amap-demo/android-cluster-marker/master/resource/move.gif)  
-
+![Screenshot](https://raw.githubusercontent.com/amap-demo/android-smooth-move/master/resource/move.gif)  
+             
 ## 扫一扫安装##
 ![Screenshot]( https://raw.githubusercontent.com/amap-demo/android-smooth-move/master/resource/download.png)  
 
