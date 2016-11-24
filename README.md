@@ -9,7 +9,7 @@
 
 ## 效果图如下 ##
 
-![Screenshot](https://raw.githubusercontent.com/amap-demo/android-smooth-move/master/resource/move.gif)  
+![Screenshot](https://raw.githubusercontent.com/amap-demo/android-smooth-move/master/resource/screenshot.png)
              
 ## 扫一扫安装##
 ![Screenshot]( https://raw.githubusercontent.com/amap-demo/android-smooth-move/master/resource/download.png)  
