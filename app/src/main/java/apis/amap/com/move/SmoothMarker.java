@@ -31,6 +31,7 @@ public class SmoothMarker {
     private LinkedList<Double> eachDistance = new LinkedList<Double>();
     private double totalDistance = 0;
     private double remainDistance = 0; // 剩余距离
+    private LatLng endPoint, lastEndPoint;
 
     //Marker位置
     private Marker marker = null;
@@ -80,6 +81,11 @@ public class SmoothMarker {
             this.points.add(latLng);
         }
 
+        if (points.size() > 1) {
+            endPoint = points.get(points.size() - 1);
+            lastEndPoint = points.get(points.size() - 2);
+        }
+
         eachDistance.clear();
         totalDistance = 0;
 
@@ -124,11 +130,9 @@ public class SmoothMarker {
     /**
      * 设置平滑移动的总时间
      *
-     * @param duration  单位: 毫秒  最小 2000ms
+     * @param duration  单位: 毫秒
      */
     public void setTotalDuration(long duration) {
-        if (duration < 2000)
-            duration = 2000;
         this.duration = duration;
     }
 
@@ -153,6 +157,7 @@ public class SmoothMarker {
             private void startRun() {
                 try {
                     if (points.size() < 1) {
+                        setEndRotate();
                         return;
                     }
 
@@ -183,6 +188,8 @@ public class SmoothMarker {
                             if (points.size() > 0) {
                                 index++;
                                 startRun();
+                            } else {
+                                setEndRotate();
                             }
                         }
                     }, time);
@@ -207,6 +214,15 @@ public class SmoothMarker {
             }
         });
         moveThread.start();
+    }
+
+    /**
+     * 设置运行时间过短导致的 终点及角度问题
+     */
+    private void setEndRotate() {
+        float rotate = getRotate(lastEndPoint, endPoint);
+        marker.setRotateAngle(360 - rotate + mAMap.getCameraPosition().bearing);
+        marker.setPosition(endPoint);
     }
 
     /**

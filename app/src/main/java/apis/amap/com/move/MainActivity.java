@@ -36,6 +36,7 @@ public class MainActivity extends Activity {
         mapView = (MapView) findViewById(R.id.map);
         mapView.onCreate(savedInstanceState);// 此方法必须重写
         init();
+
     }
 
     /**
@@ -93,7 +94,10 @@ public class MainActivity extends Activity {
 
         List<LatLng> points = readLatLngs();
         LatLngBounds bounds = new LatLngBounds(points.get(0), points.get(points.size() - 2));
-        aMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 10));
+        for (int i = 0 ; i < points.size(); i++) {
+            bounds.including(points.get(i));
+        }
+        aMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
 
         SmoothMarker smoothMarker = new SmoothMarker(aMap);
         smoothMarker.setDescriptor(BitmapDescriptorFactory.fromResource(R.drawable.car));
@@ -104,29 +108,29 @@ public class MainActivity extends Activity {
         List<LatLng> subList = points.subList(pair.first, points.size());
 
         smoothMarker.setPoints(subList);
-        smoothMarker.setTotalDuration(50000);
+        smoothMarker.setTotalDuration(200);
 
-        aMap.setInfoWindowAdapter(infoWindowAdapter);
-
-        smoothMarker.setMoveListener(new SmoothMarker.SmoothMarkerMoveListener() {
-            @Override
-            public void move(final double distance) {
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (infoWindowLayout != null && title != null) {
-
-                            title.setText("距离终点还有： " + (int) distance + "米");
-                        }
-                    }
-                });
-
-            }
-        });
+//        aMap.setInfoWindowAdapter(infoWindowAdapter);
+//        smoothMarker.setMoveListener(new SmoothMarker.SmoothMarkerMoveListener() {
+//            @Override
+//            public void move(final double distance) {
+//
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        if (infoWindowLayout != null && title != null) {
+//
+//                            title.setText("距离终点还有： " + (int) distance + "米");
+//                        }
+//                    }
+//                });
+//
+//            }
+//        });
+//        smoothMarker.getMarker().showInfoWindow();
 
         smoothMarker.startSmoothMove();
-        smoothMarker.getMarker().showInfoWindow();
+
 
     }
 
