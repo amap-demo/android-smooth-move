@@ -133,6 +133,8 @@ public class SmoothMarker {
      * @param duration  单位: 毫秒
      */
     public void setTotalDuration(long duration) {
+        if (duration <= 1000)
+            duration = 4000;
         this.duration = duration;
     }
 

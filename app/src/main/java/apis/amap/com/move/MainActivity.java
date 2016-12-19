@@ -108,7 +108,7 @@ public class MainActivity extends Activity {
         List<LatLng> subList = points.subList(pair.first, points.size());
 
         smoothMarker.setPoints(subList);
-        smoothMarker.setTotalDuration(200);
+        smoothMarker.setTotalDuration(20000);
 
 //        aMap.setInfoWindowAdapter(infoWindowAdapter);
 //        smoothMarker.setMoveListener(new SmoothMarker.SmoothMarkerMoveListener() {
