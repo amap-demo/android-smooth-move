@@ -93,10 +93,11 @@ public class MainActivity extends Activity {
         addPolylineInPlayGround();
 
         List<LatLng> points = readLatLngs();
-        LatLngBounds bounds = new LatLngBounds(points.get(0), points.get(points.size() - 2));
+        LatLngBounds.Builder b = LatLngBounds.builder();
         for (int i = 0 ; i < points.size(); i++) {
-            bounds.including(points.get(i));
+            b.include(points.get(i));
         }
+        LatLngBounds bounds = b.build();
         aMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
 
         SmoothMarker smoothMarker = new SmoothMarker(aMap);
