@@ -11,55 +11,36 @@
 
 ![Screenshot](https://raw.githubusercontent.com/amap-demo/android-smooth-move/master/resource/screenshot.png)
              
-## 扫一扫安装##
+## 扫一扫安装 ##
 ![Screenshot]( https://raw.githubusercontent.com/amap-demo/android-smooth-move/master/resource/download.png)  
 
 
-## 使用方法##
-###1:配置搭建AndroidSDK工程###
+## 使用方法 ##
+### 1:配置搭建AndroidSDK工程 ###
 - [Android Studio工程搭建方法](http://lbs.amap.com/api/android-sdk/guide/creat-project/android-studio-creat-project/#add-jars).
 - [通过maven库引入SDK方法](http://lbsbbs.amap.com/forum.php?mod=viewthread&tid=18786).
 
-###2:思路介绍###
+### 2:实现方法 ###
 
-- 计算斜率
-``` java
- /**
-  * 算斜率
-  */
-private double getSlope(LatLng fromPoint, LatLng toPoint) {
-    if (toPoint.longitude == fromPoint.longitude) {
-        return Double.MAX_VALUE;
-    }
-    double slope = ((toPoint.latitude - fromPoint.latitude) / (toPoint.longitude - fromPoint.longitude));
-    return slope;
+``` 
+// 获取轨迹坐标点
+List<LatLng> points = readLatLngs();
+LatLngBounds bounds = new LatLngBounds(points.get(0), points.get(points.size() - 2));
+mAMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 50));
 
-}
-```
- 
-- 计算移动距离
-``` java
-/**
- * 计算每次移动的距离
- */
-private double getMoveDistance(double slope) {
-    if (slope == Double.MAX_VALUE||slope==0) {
-        return DISTANCE;
-    }
-    return Math.abs((DISTANCE * slope) / Math.sqrt(1 + slope * slope));
-}
-```
-- 计算marker角度
-``` java
-/**
- * 根据点获取图标转的角度
- */
-private double getAngle(int startIndex) {
-    if ((startIndex + 1) >= mVirtureRoad.getPoints().size()) {
-        throw new RuntimeException("index out of bonds");
-    }
-    LatLng startPoint = mVirtureRoad.getPoints().get(startIndex);
-    LatLng endPoint = mVirtureRoad.getPoints().get(startIndex + 1);
-    return getAngle(startPoint, endPoint);
-}
+SmoothMoveMarker smoothMarker = new SmoothMoveMarker(mAMap);
+// 设置滑动的图标
+smoothMarker.setDescriptor(BitmapDescriptorFactory.fromResource(R.drawable.icon_car));
+
+LatLng drivePoint = points.get(0);
+Pair<Integer, LatLng> pair = SpatialRelationUtil.calShortestDistancePoint(points, drivePoint);
+points.set(pair.first, drivePoint);
+List<LatLng> subList = points.subList(pair.first, points.size());
+
+// 设置滑动的轨迹左边点
+smoothMarker.setPoints(subList);
+// 设置滑动的总时间
+smoothMarker.setTotalDuration(40);
+// 开始滑动
+smoothMarker.startSmoothMove();
 ```
