@@ -16,8 +16,8 @@ import com.amap.api.maps.model.BitmapDescriptorFactory;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.LatLngBounds;
 import com.amap.api.maps.model.Marker;
-import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.PolylineOptions;
+import com.amap.api.maps.utils.overlay.SmoothMoveMarker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,13 +85,11 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         mapView.onDestroy();
-
     }
 
     public void move(View view) {
-
         addPolylineInPlayGround();
-
+        // 获取轨迹坐标点
         List<LatLng> points = readLatLngs();
         LatLngBounds.Builder b = LatLngBounds.builder();
         for (int i = 0 ; i < points.size(); i++) {
@@ -100,7 +98,8 @@ public class MainActivity extends Activity {
         LatLngBounds bounds = b.build();
         aMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
 
-        SmoothMarker smoothMarker = new SmoothMarker(aMap);
+        final SmoothMoveMarker smoothMarker = new SmoothMoveMarker(aMap);
+        // 设置滑动的图标
         smoothMarker.setDescriptor(BitmapDescriptorFactory.fromResource(R.drawable.car));
 
         LatLng drivePoint = points.get(0);
@@ -108,31 +107,31 @@ public class MainActivity extends Activity {
         points.set(pair.first, drivePoint);
         List<LatLng> subList = points.subList(pair.first, points.size());
 
+        // 设置滑动的轨迹左边点
         smoothMarker.setPoints(subList);
-        smoothMarker.setTotalDuration(20000);
+        smoothMarker.setTotalDuration(40);
 
 //        aMap.setInfoWindowAdapter(infoWindowAdapter);
-//        smoothMarker.setMoveListener(new SmoothMarker.SmoothMarkerMoveListener() {
+//        smoothMarker.setMoveListener(
+//                new SmoothMoveMarker.MoveListener() {
 //            @Override
 //            public void move(final double distance) {
 //
 //                runOnUiThread(new Runnable() {
 //                    @Override
 //                    public void run() {
-//                        if (infoWindowLayout != null && title != null) {
-//
+//                        if (infoWindowLayout != null && title != null && smoothMarker.getMarker().isInfoWindowShown()) {
 //                            title.setText("距离终点还有： " + (int) distance + "米");
+//                        }
+//                        if(distance == 0){
+//                            smoothMarker.getMarker().hideInfoWindow();
 //                        }
 //                    }
 //                });
-//
 //            }
 //        });
 //        smoothMarker.getMarker().showInfoWindow();
-
         smoothMarker.startSmoothMove();
-
-
     }
 
     AMap.InfoWindowAdapter infoWindowAdapter = new AMap.InfoWindowAdapter() {
@@ -199,26 +198,6 @@ public class MainActivity extends Activity {
                 .addAll(list)
                 .useGradient(true)
                 .width(18));
-    }
-
-
-    private void addMarkerInBeijing(int number) {
-        Random random = new Random();
-
-        //new LatLng(39.90403, 116.407525)
-        double tem_lat = 39.9;
-        double tem_lon = 116.4;
-        BitmapDescriptor descriptor = BitmapDescriptorFactory.defaultMarker();
-        if (number == 1) {
-            aMap.addMarker(new MarkerOptions().position(new LatLng(tem_lat, tem_lon)).icon(descriptor));
-            return;
-        }
-
-        for (int i = 0; i < number; i++) {
-            LatLng latLng = new LatLng(tem_lat + random.nextDouble() * (random.nextBoolean() ? 1 : -1), tem_lon + random.nextDouble() * (random.nextBoolean() ? 1 : -1));
-            aMap.addMarker(new MarkerOptions().position(latLng).icon(descriptor));
-        }
-
     }
 
     private List<LatLng> readLatLngs() {
