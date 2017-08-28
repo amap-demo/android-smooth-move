@@ -3,6 +3,7 @@ package apis.amap.com.move;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -102,35 +103,40 @@ public class MainActivity extends Activity {
         // 设置滑动的图标
         smoothMarker.setDescriptor(BitmapDescriptorFactory.fromResource(R.drawable.car));
 
-        LatLng drivePoint = points.get(0);
+        /*
+        //当移动Marker的当前位置不在轨迹起点，先从当前位置移动到轨迹上，再开始平滑移动
+        // LatLng drivePoint = points.get(0);//设置小车当前位置，可以是任意点，这里直接设置为轨迹起点
+        LatLng drivePoint = new LatLng(39.980521,116.351905);//设置小车当前位置，可以是任意点
         Pair<Integer, LatLng> pair = PointsUtil.calShortestDistancePoint(points, drivePoint);
         points.set(pair.first, drivePoint);
         List<LatLng> subList = points.subList(pair.first, points.size());
-
         // 设置滑动的轨迹左边点
-        smoothMarker.setPoints(subList);
-        smoothMarker.setTotalDuration(40);
+        smoothMarker.setPoints(subList);*/
 
-//        aMap.setInfoWindowAdapter(infoWindowAdapter);
-//        smoothMarker.setMoveListener(
-//                new SmoothMoveMarker.MoveListener() {
-//            @Override
-//            public void move(final double distance) {
-//
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        if (infoWindowLayout != null && title != null && smoothMarker.getMarker().isInfoWindowShown()) {
-//                            title.setText("距离终点还有： " + (int) distance + "米");
-//                        }
-//                        if(distance == 0){
-//                            smoothMarker.getMarker().hideInfoWindow();
-//                        }
-//                    }
-//                });
-//            }
-//        });
-//        smoothMarker.getMarker().showInfoWindow();
+        smoothMarker.setPoints(points);//设置平滑移动的轨迹list
+        smoothMarker.setTotalDuration(40);//设置平滑移动的总时间
+
+        aMap.setInfoWindowAdapter(infoWindowAdapter);
+        smoothMarker.setMoveListener(
+                new SmoothMoveMarker.MoveListener() {
+            @Override
+            public void move(final double distance) {
+
+                Log.i("MY","distance:  "+distance);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (infoWindowLayout != null && title != null && smoothMarker.getMarker().isInfoWindowShown()) {
+                            title.setText("距离终点还有： " + (int) distance + "米");
+                        }
+                        if(distance == 0){
+                            smoothMarker.getMarker().hideInfoWindow();
+                        }
+                    }
+                });
+            }
+        });
+        smoothMarker.getMarker().showInfoWindow();
         smoothMarker.startSmoothMove();
     }
 
@@ -173,28 +179,8 @@ public class MainActivity extends Activity {
     private void addPolylineInPlayGround() {
         List<LatLng> list = readLatLngs();
         List<Integer> colorList = new ArrayList<Integer>();
-        List<BitmapDescriptor> bitmapDescriptors = new ArrayList<BitmapDescriptor>();
-
-        int[] colors = new int[]{Color.argb(255, 0, 255, 0), Color.argb(255, 255, 255, 0), Color.argb(255, 255, 0, 0)};
-
-        //用一个数组来存放纹理
-        List<BitmapDescriptor> textureList = new ArrayList<BitmapDescriptor>();
-        textureList.add(BitmapDescriptorFactory.fromResource(R.drawable.custtexture));
-
-        List<Integer> texIndexList = new ArrayList<Integer>();
-        texIndexList.add(0);//对应上面的第0个纹理
-        texIndexList.add(1);
-        texIndexList.add(2);
-
-        Random random = new Random();
-        for (int i = 0; i < list.size(); i++) {
-            colorList.add(colors[random.nextInt(3)]);
-            bitmapDescriptors.add(textureList.get(0));
-
-        }
 
         aMap.addPolyline(new PolylineOptions().setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.custtexture)) //setCustomTextureList(bitmapDescriptors)
-//				.setCustomTextureIndex(texIndexList)
                 .addAll(list)
                 .useGradient(true)
                 .width(18));
