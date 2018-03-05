@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -24,10 +25,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements View.OnClickListener{
 
     private MapView mapView;
+
     private AMap aMap;
+
+    private Button mStartButton;
+    private SmoothMoveMarker moveMarker;
+
+
+    private static final int START_STATUS=0;
+
+    private static final int MOVE_STATUS=1;
+
+    private static final int PAUSE_STATUS=2;
+    private static final int FINISH_STATUS=3;
+
+    private int mMarkerStatus=START_STATUS;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +52,11 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         mapView = (MapView) findViewById(R.id.map);
+        mStartButton= (Button) findViewById(R.id.move_start_button);
+        mStartButton.setOnClickListener(this);
         mapView.onCreate(savedInstanceState);// 此方法必须重写
         init();
+        initMoveMarker();
 
     }
 
@@ -88,7 +108,8 @@ public class MainActivity extends Activity {
         mapView.onDestroy();
     }
 
-    public void move(View view) {
+
+    private void initMoveMarker(){
         addPolylineInPlayGround();
         // 获取轨迹坐标点
         List<LatLng> points = readLatLngs();
@@ -99,9 +120,9 @@ public class MainActivity extends Activity {
         LatLngBounds bounds = b.build();
         aMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
 
-        final SmoothMoveMarker smoothMarker = new SmoothMoveMarker(aMap);
+        moveMarker = new SmoothMoveMarker(aMap);
         // 设置滑动的图标
-        smoothMarker.setDescriptor(BitmapDescriptorFactory.fromResource(R.drawable.car));
+        moveMarker.setDescriptor(BitmapDescriptorFactory.fromResource(R.drawable.car));
 
         /*
         //当移动Marker的当前位置不在轨迹起点，先从当前位置移动到轨迹上，再开始平滑移动
@@ -113,31 +134,40 @@ public class MainActivity extends Activity {
         // 设置滑动的轨迹左边点
         smoothMarker.setPoints(subList);*/
 
-        smoothMarker.setPoints(points);//设置平滑移动的轨迹list
-        smoothMarker.setTotalDuration(40);//设置平滑移动的总时间
+        moveMarker.setPoints(points);//设置平滑移动的轨迹list
+        moveMarker.setTotalDuration(40);//设置平滑移动的总时间
 
         aMap.setInfoWindowAdapter(infoWindowAdapter);
-        smoothMarker.setMoveListener(
+        moveMarker.setMoveListener(
                 new SmoothMoveMarker.MoveListener() {
-            @Override
-            public void move(final double distance) {
-
-                Log.i("MY","distance:  "+distance);
-                runOnUiThread(new Runnable() {
                     @Override
-                    public void run() {
-                        if (infoWindowLayout != null && title != null && smoothMarker.getMarker().isInfoWindowShown()) {
-                            title.setText("距离终点还有： " + (int) distance + "米");
-                        }
-                        if(distance == 0){
-                            smoothMarker.getMarker().hideInfoWindow();
-                        }
+                    public void move(final double distance) {
+
+                        Log.i("MY","distance:  "+distance);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (infoWindowLayout != null && title != null && moveMarker.getMarker().isInfoWindowShown()) {
+                                    title.setText("距离终点还有： " + (int) distance + "米");
+                                }
+                                if(distance == 0){
+                                    moveMarker.getMarker().hideInfoWindow();
+                                    mMarkerStatus=FINISH_STATUS;
+                                    mStartButton.setText("开始");
+
+
+                                }
+                            }
+                        });
                     }
                 });
-            }
-        });
-        smoothMarker.getMarker().showInfoWindow();
-        smoothMarker.startSmoothMove();
+        moveMarker.getMarker().showInfoWindow();
+    }
+
+
+    public void move(View view) {
+
+        moveMarker.startSmoothMove();
     }
 
     AMap.InfoWindowAdapter infoWindowAdapter = new AMap.InfoWindowAdapter() {
@@ -248,4 +278,36 @@ public class MainActivity extends Activity {
             116.34549232235582, 39.98105271658809, 116.34537348820508,
             39.981052294975264, 116.3453513775533, 39.980956549928244
     };
+
+    @Override
+    public void onClick(View v) {
+        if (mMarkerStatus==START_STATUS){
+            moveMarker.startSmoothMove();
+            mMarkerStatus=MOVE_STATUS;
+            mStartButton.setText("暂停");
+        }
+       else if (mMarkerStatus==MOVE_STATUS){
+            moveMarker.stopMove();
+            mMarkerStatus=PAUSE_STATUS;
+            mStartButton.setText("继续");
+        }
+        else if (mMarkerStatus==PAUSE_STATUS){
+           moveMarker.startSmoothMove();
+           mMarkerStatus=MOVE_STATUS;
+            mStartButton.setText("暂停");
+        }
+        else if (mMarkerStatus==FINISH_STATUS){
+            moveMarker.setPosition(new LatLng( 39.97617053371078,116.3499049793749));
+            List<LatLng> points = readLatLngs();
+            moveMarker.setPoints(points);
+            moveMarker.getMarker().showInfoWindow();
+            moveMarker.startSmoothMove();
+
+            mMarkerStatus=MOVE_STATUS;
+            mStartButton.setText("暂停");
+
+        }
+
+
+    }
 }
